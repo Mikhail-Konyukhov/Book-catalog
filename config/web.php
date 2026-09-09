@@ -52,7 +52,7 @@ $config = [
                     // не сыпались служебные сообщения фреймворка.
                     'class' => \yii\log\FileTarget::class,
                     'levels' => ['info'],
-                    'categories' => ['app\models\*'],
+                    'categories' => ['app\models\*', 'app\components\*'],
                 ],
             ],
         ],
