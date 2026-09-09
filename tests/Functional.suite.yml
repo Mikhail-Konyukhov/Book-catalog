@@ -1,0 +1,21 @@
+---
+# Codeception Test Suite Configuration
+
+# suite for functional (integration) tests.
+# emulate web requests and make application process them.
+# (tip: better to use with frameworks).
+
+# RUN `build` COMMAND AFTER ADDING/REMOVING MODULES.
+#basic/web/index.php
+actor: FunctionalTester
+modules:
+    enabled:
+      - Filesystem
+      - Yii2:
+          # cleanup: false switches off wrapping each test into a transaction.
+          # The request handled inside a functional test opens its own connection
+          # and would not see rows that are still uncommitted, so fixtures have to
+          # be committed. Tables are reset by the fixtures themselves before every
+          # test, which keeps the suite repeatable.
+          cleanup: false
+      - Asserts

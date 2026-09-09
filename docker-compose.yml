@@ -1,0 +1,35 @@
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+    volumes:
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-psecret"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  php:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_NAME: infotech
+      DB_NAME_TEST: infotech_test
+      DB_USER: root
+      DB_PASS: secret
+      SMSPILOT_KEY: ""
+    volumes:
+      - ./:/app
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    # ServeController has no --address option: the address is a positional argument.
+    command: php yii serve 0.0.0.0 --port=8080
+
+volumes:
+  db-data:
