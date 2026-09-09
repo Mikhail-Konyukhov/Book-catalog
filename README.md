@@ -43,11 +43,16 @@ test.bat       (Windows)
 | `SMSPILOT_KEY` | пусто | ключ smspilot; пусто — смс не отправляются, факт пишется в лог |
 | `APP_PORT` | `8080` | порт на хосте |
 
-Ключа smspilot в репозитории нет и быть не должно. Ключ-эмулятор берётся
-в личном кабинете smspilot.ru и передаётся через окружение: `SMSPILOT_KEY=xxx ./run.sh`
-на Linux и macOS, `set SMSPILOT_KEY=xxx` перед `run.bat` на Windows.
+Ключа smspilot в репозитории нет и быть не должно. Ключ передаётся через
+окружение: `SMSPILOT_KEY=xxx ./run.sh` на Linux и macOS,
+`set SMSPILOT_KEY=xxx` перед `run.bat` на Windows.
 Без ключа приложение работает целиком, кроме отправки: адресаты считаются,
 факт «ключа нет» пишется в лог, `notified_at` остаётся пустым.
+
+Для проверки без реальной отправки подходит ключ-эмулятор smspilot
+`XXXXXXXXXXXXYYYYYYYYYYYYZZZZZZZZXXXXXXXXXXXXYYYYYYYYYYYYZZZZZZZZ`:
+api отвечает штатным ответом со статусом отправки, смс никуда не уходит,
+баланс фиктивный. Отправка и `notified_at` проверены именно на нём.
 
 ## Структура
 
