@@ -1,11 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * Twelve authors: the report has to cut the top ten out of them.
  * The last one has no middle name - getFullName() must not leave a double space.
  */
+
+declare(strict_types=1);
+
 return [
     'author1' => ['id' => 1, 'last_name' => 'Абрамов', 'first_name' => 'Андрей', 'middle_name' => 'Петрович'],
     'author2' => ['id' => 2, 'last_name' => 'Белов', 'first_name' => 'Борис', 'middle_name' => 'Ильич'],

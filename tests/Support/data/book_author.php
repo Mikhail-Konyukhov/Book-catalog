@@ -1,12 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * Book counts per author for 2020, on which AuthorTest relies:
  * author 1 - 4 books, author 2 - 3, authors 3 and 4 - 2 each, authors 5-12 - one each.
  * So the top ten are 1, 2, 3, 4 and then 5-10 by ascending id; 11 and 12 are cut off.
  */
+
+declare(strict_types=1);
+
 return [
     ['book_id' => 1, 'author_id' => 1],
     ['book_id' => 2, 'author_id' => 1],

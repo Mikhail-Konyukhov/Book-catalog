@@ -19,6 +19,10 @@ return [
     'language' => 'en-US',
     'components' => [
         'db' => $db,
+        'smsSender' => [
+            'class' => \app\components\SmsSender::class,
+            'apiKey' => $params['smspilotKey'],
+        ],
         'mailer' => [
             'class' => \yii\symfonymailer\Mailer::class,
             'messageClass' => \yii\symfonymailer\Message::class,

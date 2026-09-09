@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace app\models;
 
+use app\components\SmsSender;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveQuery;
@@ -92,20 +93,32 @@ class Subscription extends ActiveRecord
 
     /**
      * Уведомляет подписчиков авторов книги. Возвращает число адресатов.
-     * Волна D добавляет сюда отправку и notified_at.
+     * Ошибка отправки не роняет создание книги: notified_at просто
+     * не проставляется, и по колонке видно, кому смс не ушла.
      */
     public static function notifyNewBook(Book $book): int
     {
-        $phones = static::find()
-            ->select('phone')
-            ->distinct()
-            ->where([
-                'author_id' => (new Query())
-                    ->select('author_id')
-                    ->from('{{%book_author}}')
-                    ->where(['book_id' => $book->id]),
-            ])
-            ->column();
+        $condition = [
+            'author_id' => (new Query())
+                ->select('author_id')
+                ->from('{{%book_author}}')
+                ->where(['book_id' => $book->id]),
+        ];
+
+        $phones = static::find()->select('phone')->distinct()->where($condition)->column();
+
+        if ($phones === []) {
+            return 0;
+        }
+
+        $text = sprintf('Новая книга «%s» (%d) — подписка на автора.', $book->title, (int) $book->year);
+
+        /** @var SmsSender $sender */
+        $sender = Yii::$app->get('smsSender');
+
+        if ($sender->send($phones, $text)) {
+            static::updateAll(['notified_at' => time()], $condition);
+        }
 
         Yii::info(
             sprintf('Книга «%s» (id %d): адресатов — %d', $book->title, (int) $book->id, count($phones)),

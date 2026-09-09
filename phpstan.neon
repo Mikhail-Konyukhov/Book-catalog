@@ -3,12 +3,12 @@ parameters:
 
     paths:
         - assets
+        - components
         - commands
         - controllers
         - mail
         - models
         - widgets
-        - tests/Acceptance
         - tests/Functional
         - tests/Unit
 
@@ -25,7 +25,5 @@ parameters:
         - YII_ENV_PROD
         - YII_ENV_TEST
 
-    ignoreErrors:
-        - '#Unsafe usage of new static\(\).#'
 
     tmpDir: %currentWorkingDirectory%/runtime

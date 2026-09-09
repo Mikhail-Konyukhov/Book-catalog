@@ -23,7 +23,7 @@ services:
       DB_NAME_TEST: infotech_test
       DB_USER: root
       DB_PASS: secret
-      SMSPILOT_KEY: ""
+      SMSPILOT_KEY: "${SMSPILOT_KEY:-}"
     volumes:
       - ./:/app
     ports:

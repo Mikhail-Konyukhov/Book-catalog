@@ -1,11 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * Books 1-12 are from 2020 and feed the report; book 13 is from 2019 and must not
  * leak into it. Only book 1 has a cover - the rest check that a null cover is fine.
  */
+
+declare(strict_types=1);
+
 return [
     'book1' => ['id' => 1, 'title' => 'Река времени', 'year' => 2020, 'description' => 'Роман о времени.', 'isbn' => '978-5-0001-0001-1', 'cover_path' => 'uploads/cover1.jpg', 'created_at' => 1600000001],
     'book2' => ['id' => 2, 'title' => 'Тень над городом', 'year' => 2020, 'description' => null, 'isbn' => '978-5-0001-0002-8', 'cover_path' => null, 'created_at' => 1600000002],

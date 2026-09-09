@@ -26,6 +26,10 @@ $config = [
             ],
         ],
         'db' => $db,
+        'smsSender' => [
+            'class' => \app\components\SmsSender::class,
+            'apiKey' => $params['smspilotKey'],
+        ],
     ],
     'params' => $params,
     /*

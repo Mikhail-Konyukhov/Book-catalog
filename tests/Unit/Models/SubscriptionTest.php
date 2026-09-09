@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace app\tests\Unit\Models;
 
+use app\components\SmsSender;
 use app\models\Book;
 use app\models\Subscription;
 use app\tests\Support\Fixtures\AuthorFixture;
 use app\tests\Support\Fixtures\BookAuthorFixture;
 use app\tests\Support\Fixtures\BookFixture;
 use app\tests\Support\Fixtures\SubscriptionFixture;
+use app\tests\Support\StubSmsSender;
 
 final class SubscriptionTest extends \Codeception\Test\Unit
 {
@@ -67,5 +69,40 @@ final class SubscriptionTest extends \Codeception\Test\Unit
     public function testNotifyNewBookWithoutSubscribersReturnsZero(): void
     {
         verify(Subscription::notifyNewBook(Book::findOne(12)))->equals(0);
+    }
+
+    public function testNotifyNewBookMarksExactlyTheSubscriptionsThatWereSentTo(): void
+    {
+        $sender = $this->stubSender(true);
+
+        verify(Subscription::notifyNewBook(Book::findOne(4)))->equals(1);
+        verify($sender->phones)->equals(['+79991110000']);
+
+        // Подписки 1 и 2 - на авторов книги 4, подписка 3 - на постороннего автора.
+        verify(Subscription::findOne(1)->notified_at)->notNull();
+        verify(Subscription::findOne(2)->notified_at)->notNull();
+        verify(Subscription::findOne(3)->notified_at)->null();
+    }
+
+    public function testFailedSendLeavesNotifiedAtEmpty(): void
+    {
+        $this->stubSender(false);
+
+        verify(Subscription::notifyNewBook(Book::findOne(4)))->equals(1);
+        verify(Subscription::findOne(1)->notified_at)->null();
+    }
+
+    public function testSenderWithoutKeyDoesNotSend(): void
+    {
+        verify((new SmsSender())->send(['+79991110000'], 'text'))->false();
+    }
+
+    private function stubSender(bool $result): StubSmsSender
+    {
+        $sender = new StubSmsSender();
+        $sender->result = $result;
+        \Yii::$app->set('smsSender', $sender);
+
+        return $sender;
     }
 }

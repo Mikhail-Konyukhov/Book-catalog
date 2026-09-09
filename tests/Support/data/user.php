@@ -1,11 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * Password equals the username; the hashes are the ones shipped with yii2-app-basic,
  * so the template login tests keep working against the user table.
  */
+
+declare(strict_types=1);
+
 return [
     'admin' => [
         'id' => 100,
