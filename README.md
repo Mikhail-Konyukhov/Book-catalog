@@ -13,7 +13,8 @@ run.bat        (Windows)
 ```
 
 Скрипт поднимает MySQL, ставит зависимости, накатывает миграции, запускает
-приложение и проверяет, что оно отвечает. Ненулевой код возврата — на любом
+приложение и проверяет, что отвечает не только корень, но и `/book/index`
+со списком книг: корень отвечает двумястами и при сломанном `urlManager`. Ненулевой код возврата — на любом
 сбое. Приложение: <http://localhost:8080>. Порт занят — `APP_PORT=8088 ./run.sh`.
 
 Демо-учётка: `admin` / `admin123` — заводится миграцией.
@@ -42,6 +43,13 @@ test.bat       (Windows)
 | `DB_USER` / `DB_PASS` | `root` / `secret` | доступ к MySQL |
 | `SMSPILOT_KEY` | пусто | ключ smspilot; пусто — смс не отправляются, факт пишется в лог |
 | `APP_PORT` | `8080` | порт на хосте |
+| `YII_ENV` | `dev` в compose, иначе `prod` | `dev` включает отладчик и Gii; в бою оставить пустой |
+| `COOKIE_VALIDATION_KEY` | dev-значение из compose | ключ подписи cookie; в бою задать свой |
+
+Секретов в репозитории нет. Ключ подписи cookie и окружение читаются оттуда же,
+откуда доступ к базе: дефолт в `docker-compose.yml` годится для разработки,
+в бою обе переменные задаются снаружи. Без `YII_ENV=dev` приложение поднимается
+как prod — без отладчика, Gii и стектрейсов наружу.
 
 Ключа smspilot в репозитории нет и быть не должно. Ключ передаётся через
 окружение: `SMSPILOT_KEY=xxx ./run.sh` на Linux и macOS,
@@ -63,7 +71,9 @@ controllers/      Book, Author, Subscription, Report, Site
 models/           Author, Book, BookSearch, Subscription, ReportForm, User
 migrations/       пять миграций: author, book, book_author, subscription, user
 views/            вьюхи по контроллерам
-tests/            Unit и Functional (Codeception), фикстуры в tests/Support
+tests/            Unit и Functional (Codeception), фикстуры в tests/Support;
+                  наши проверки - Cest-ы, каждая печатает при прогоне,
+                  что именно проверяет
 docker/           init.sql: рабочая и тестовая схемы
 ```
 
@@ -97,6 +107,11 @@ docker/           init.sql: рабочая и тестовая схемы
 колонка осталась пустой, и по ней видно, кому смс не дошла. Отправщик ходит
 одним POST на всех адресатов сразу и с `CURLOPT_TIMEOUT`: без таймаута
 зависший внешний сервис подвешивал бы страницу создания книги.
+
+**Pretty URL включены.** Адреса выглядят как `/book/index`, а не
+`/index.php?r=book%2Findex`. Встроенный сервер PHP сам отдаёт `index.php`
+на путь без файла, поэтому отдельный роутер не нужен; для nginx понадобится
+`try_files $uri /index.php$is_args$args`.
 
 **Отчёт — один запрос.** `Author::topByYear()` собирает ТОП-10 группировкой
 на стороне MySQL, без выборки книг в PHP. Списки книг читают авторов через

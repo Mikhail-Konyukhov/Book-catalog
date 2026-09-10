@@ -25,8 +25,7 @@ $config = [
     ],
     'components' => [
         'request' => [
-            // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
-            'cookieValidationKey' => 'LYVJyY7Ytd5uDjx3ZAnJPJpB8PUMUW8U',
+            'cookieValidationKey' => $params['cookieValidationKey'],
         ],
         'cache' => [
             'class' => \yii\caching\FileCache::class,
@@ -61,14 +60,13 @@ $config = [
             'class' => \app\components\SmsSender::class,
             'apiKey' => $params['smspilotKey'],
         ],
-        /*
+        // Без этого адреса выглядят как /index.php?r=book%2Findex.
+        // Встроенный сервер PHP сам отдаёт index.php на пути без файла,
+        // отдельный роутер не нужен; для nginx понадобится try_files.
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
-            'rules' => [
-            ],
         ],
-        */
     ],
     'params' => $params,
 ];

@@ -8,8 +8,9 @@ use app\models\Author;
 use app\tests\Support\Fixtures\AuthorFixture;
 use app\tests\Support\Fixtures\BookAuthorFixture;
 use app\tests\Support\Fixtures\BookFixture;
+use app\tests\Support\UnitTester;
 
-final class AuthorTest extends \Codeception\Test\Unit
+final class AuthorModelCest
 {
     public function _fixtures(): array
     {
@@ -20,18 +21,21 @@ final class AuthorTest extends \Codeception\Test\Unit
         ];
     }
 
-    public function testFullNameJoinsThreeParts(): void
+    public function fullName(UnitTester $I): void
     {
+        $I->wantTo('ФИО автора склеивается из фамилии, имени и отчества');
         verify(Author::findOne(1)->getFullName())->equals('Абрамов Андрей Петрович');
     }
 
-    public function testFullNameWithoutMiddleNameHasNoTrailingSpace(): void
+    public function fullNameWithoutMiddleName(UnitTester $I): void
     {
+        $I->wantTo('автор без отчества: в ФИО нет висящего пробела');
         verify(Author::findOne(12)->getFullName())->equals('Морозов Никита');
     }
 
-    public function testTopByYearIsOrderedByBookCountAndLimitedToTen(): void
+    public function topIsOrderedAndLimited(UnitTester $I): void
     {
+        $I->wantTo('отчёт: ровно 10 строк, по убыванию числа книг за год');
         $top = Author::topByYear(2020);
 
         verify($top)->arrayCount(10);
@@ -40,9 +44,10 @@ final class AuthorTest extends \Codeception\Test\Unit
         verify($top[0]['last_name'])->equals('Абрамов');
     }
 
-    public function testTopByYearCountsOnlyTheRequestedYear(): void
+    public function topCountsOnlyTheRequestedYear(UnitTester $I): void
     {
-        // Author 12 has one book in 2019 and one in 2020, so neither year gives him two.
+        $I->wantTo('отчёт считает книги только запрошенного года, а не все подряд');
+        // У автора 12 одна книга в 2019 и одна в 2020 - ни один год не даёт ему двух.
         $top = Author::topByYear(2019);
 
         verify($top)->arrayCount(1);
@@ -50,8 +55,9 @@ final class AuthorTest extends \Codeception\Test\Unit
         verify($top[0]['books_count'])->equals(1);
     }
 
-    public function testTopByYearForAYearWithoutBooksIsEmpty(): void
+    public function topForAnEmptyYear(UnitTester $I): void
     {
+        $I->wantTo('год, в котором книг нет, даёт пустой отчёт, а не ошибку');
         verify(Author::topByYear(2005))->equals([]);
     }
 }

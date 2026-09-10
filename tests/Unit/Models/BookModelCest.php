@@ -8,9 +8,10 @@ use app\models\Book;
 use app\tests\Support\Fixtures\AuthorFixture;
 use app\tests\Support\Fixtures\BookAuthorFixture;
 use app\tests\Support\Fixtures\BookFixture;
+use app\tests\Support\UnitTester;
 use Yii;
 
-final class BookTest extends \Codeception\Test\Unit
+final class BookModelCest
 {
     public function _fixtures(): array
     {
@@ -21,9 +22,10 @@ final class BookTest extends \Codeception\Test\Unit
         ];
     }
 
-    public function testYearAboveTheUpperBoundIsInvalid(): void
+    public function yearAboveTheUpperBound(UnitTester $I): void
     {
-        // Must fail on the form, not in MySQL: 99999 does not fit into SMALLINT UNSIGNED.
+        $I->wantTo('год 99999 отбивается формой, а не пятисоткой из MySQL');
+        // 99999 не влезает в SMALLINT UNSIGNED: без верхней границы это 500, а не ошибка формы.
         $model = new Book([
             'title' => 'Из будущего',
             'year' => 99999,
@@ -35,9 +37,9 @@ final class BookTest extends \Codeception\Test\Unit
         verify($model->errors)->arrayHasKey('year');
     }
 
-    public function testUnknownAuthorIdIsInvalid(): void
+    public function unknownAuthorId(UnitTester $I): void
     {
-        // Without this rule a forged POST reaches link() and breaks on the foreign key.
+        $I->wantTo('подделанный POST с несуществующим автором не доходит до внешнего ключа');
         $model = new Book([
             'title' => 'Ничей автор',
             'year' => 2021,
@@ -49,8 +51,9 @@ final class BookTest extends \Codeception\Test\Unit
         verify($model->errors)->arrayHasKey('authorIds');
     }
 
-    public function testExistingIsbnIsInvalid(): void
+    public function duplicateIsbn(UnitTester $I): void
     {
+        $I->wantTo('повторный ISBN не проходит валидацию');
         $model = new Book([
             'title' => 'Двойник',
             'year' => 2021,
@@ -62,8 +65,9 @@ final class BookTest extends \Codeception\Test\Unit
         verify($model->errors)->arrayHasKey('isbn');
     }
 
-    public function testUpdateWithTheSameAuthorsKeepsTwoRows(): void
+    public function updateWithTheSameAuthors(UnitTester $I): void
     {
+        $I->wantTo('правка книги тем же составом авторов не задваивает связи');
         $model = Book::findOne(4);
         $model->authorIds = [1, 2];
         $model->title = 'Двойная звезда, издание второе';
@@ -72,13 +76,28 @@ final class BookTest extends \Codeception\Test\Unit
         verify($this->authorRowCount(4))->equals(2);
     }
 
-    public function testUpdateReplacesTheAuthorList(): void
+    public function updateReplacesTheAuthorList(UnitTester $I): void
     {
+        $I->wantTo('правка книги новым составом авторов заменяет прежний, а не дописывает');
         $model = Book::findOne(4);
         $model->authorIds = [3];
 
         verify($model->save())->true();
         verify($this->authorRowCount(4))->equals(1);
+    }
+
+    public function duplicateAuthorIdsAreCollapsed(UnitTester $I): void
+    {
+        $I->wantTo('подделанный POST с одним автором дважды сохраняется, а не падает дублем PK');
+        $model = new Book([
+            'title' => 'Дубль в POST',
+            'year' => 2021,
+            'isbn' => '978-5-0002-0003-4',
+            'authorIds' => [1, '1'],
+        ]);
+
+        verify($model->save())->true();
+        verify($this->authorRowCount((int) $model->id))->equals(1);
     }
 
     private function authorRowCount(int $bookId): int

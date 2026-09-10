@@ -38,6 +38,11 @@ timeout /t 1 /nobreak >nul
 goto :waithttp
 :httpok
 
+rem Отдельная проверка pretty URL: без router.php встроенный сервер PHP отдаёт
+rem на такой путь 404, а корень при этом продолжает отвечать двумястами.
+curl -fsS http://localhost:%APP_PORT%/book/index >nul 2>&1
+if errorlevel 1 goto :fail_route
+
 echo готово: http://localhost:%APP_PORT%/
 exit /b 0
 
@@ -55,6 +60,9 @@ echo run: миграции 1>&2
 exit /b 1
 :fail_app
 echo run: не удалось запустить контейнер приложения 1>&2
+exit /b 1
+:fail_route
+echo run: маршрут /book/index не отдаёт список книг - проверь urlManager 1>&2
 exit /b 1
 :fail_http
 echo run: приложение не отвечает на http://localhost:%APP_PORT%/ 1>&2

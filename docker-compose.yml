@@ -24,6 +24,9 @@ services:
       DB_USER: root
       DB_PASS: secret
       SMSPILOT_KEY: "${SMSPILOT_KEY:-}"
+      # dev включает отладчик и Gii; без переменной приложение поднимается как prod.
+      YII_ENV: "${YII_ENV:-dev}"
+      COOKIE_VALIDATION_KEY: "${COOKIE_VALIDATION_KEY:-dev-only-LYVJyY7Ytd5uDjx3ZAnJPJpB}"
     volumes:
       - ./:/app
     ports:

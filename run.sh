@@ -28,4 +28,8 @@ until curl -fsS "http://localhost:$APP_PORT/" >/dev/null 2>&1; do
     sleep 1
 done
 
+# Отдельная проверка pretty URL: корень отвечает двумястами и при сломанном
+# urlManager, а этот путь - нет.
+curl -fsS "http://localhost:$APP_PORT/book/index" 2>/dev/null | grep -q '<h1>Книги'     || die "маршрут /book/index не отдаёт список книг - проверь urlManager"
+
 echo "готово: http://localhost:$APP_PORT/"
