@@ -25,17 +25,26 @@ docker compose run --rm php php tests/Support/bin/yii migrate/fresh --interactiv
 if errorlevel 1 goto :fail_migrate
 
 docker compose run --rm php vendor/bin/codecept run Unit,Functional
-exit /b %errorlevel%
+set rc=%errorlevel%
+goto :finish
 
 :fail_db
 echo test: не удалось запустить контейнер БД 1>&2
-exit /b 1
+set rc=1
+goto :finish
 :fail_wait
 echo test: MySQL не поднялся за 60 секунд 1>&2
-exit /b 1
+set rc=1
+goto :finish
 :fail_composer
 echo test: composer install 1>&2
-exit /b 1
+set rc=1
+goto :finish
 :fail_migrate
 echo test: миграции тестовой базы 1>&2
-exit /b 1
+set rc=1
+goto :finish
+rem Пауза только при запуске двойным кликом: в %cmdcmdline% тогда стоит имя файла.
+:finish
+echo %cmdcmdline% | find /i "%~nx0" >nul && pause
+exit /b %rc%

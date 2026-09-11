@@ -37,3 +37,6 @@ tests/_support/_generated
 # загруженные обложки
 /web/uploads/*
 !/web/uploads/.gitkeep
+
+# c3.php: Codeception восстанавливает его при прогоне с покрытием
+/c3.php

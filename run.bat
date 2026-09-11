@@ -44,26 +44,38 @@ curl -fsS http://localhost:%APP_PORT%/book/index >nul 2>&1
 if errorlevel 1 goto :fail_route
 
 echo готово: http://localhost:%APP_PORT%/
-exit /b 0
+set rc=0
+goto :finish
 
 :fail_db
 echo run: не удалось запустить контейнер БД 1>&2
-exit /b 1
+set rc=1
+goto :finish
 :fail_wait
 echo run: MySQL не поднялся за 60 секунд 1>&2
-exit /b 1
+set rc=1
+goto :finish
 :fail_composer
 echo run: composer install 1>&2
-exit /b 1
+set rc=1
+goto :finish
 :fail_migrate
 echo run: миграции 1>&2
-exit /b 1
+set rc=1
+goto :finish
 :fail_app
 echo run: не удалось запустить контейнер приложения 1>&2
-exit /b 1
+set rc=1
+goto :finish
 :fail_route
 echo run: маршрут /book/index не отдаёт список книг - проверь urlManager 1>&2
-exit /b 1
+set rc=1
+goto :finish
 :fail_http
 echo run: приложение не отвечает на http://localhost:%APP_PORT%/ 1>&2
-exit /b 1
+set rc=1
+goto :finish
+rem Пауза только при запуске двойным кликом: в %cmdcmdline% тогда стоит имя файла.
+:finish
+echo %cmdcmdline% | find /i "%~nx0" >nul && pause
+exit /b %rc%

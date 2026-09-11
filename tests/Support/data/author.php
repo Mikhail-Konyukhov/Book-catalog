@@ -1,8 +1,9 @@
 <?php
 
 /**
- * Twelve authors: the report has to cut the top ten out of them.
- * The last one has no middle name - getFullName() must not leave a double space.
+ * Thirteen authors: the report has to cut the top ten out of them.
+ * The twelfth has no middle name - getFullName() must not leave a double space.
+ * The thirteenth has no books at all: cascade and empty-report scenarios need one.
  */
 
 declare(strict_types=1);
@@ -20,4 +21,5 @@ return [
     'author10' => ['id' => 10, 'last_name' => 'Козлов', 'first_name' => 'Леонид', 'middle_name' => 'Яковлевич'],
     'author11' => ['id' => 11, 'last_name' => 'Лебедев', 'first_name' => 'Максим', 'middle_name' => 'Артёмович'],
     'author12' => ['id' => 12, 'last_name' => 'Морозов', 'first_name' => 'Никита', 'middle_name' => null],
+    'author13' => ['id' => 13, 'last_name' => 'Нилов', 'first_name' => 'Олег', 'middle_name' => 'Павлович'],
 ];

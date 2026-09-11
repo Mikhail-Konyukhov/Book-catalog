@@ -73,14 +73,14 @@ $config = [
 
 if (YII_ENV_DEV) {
     // configuration adjustments for 'dev' environment
+    // allowedIPs: в докере браузер приходит с адреса шлюза, а не с 127.0.0.1,
+    // и панель молча пряталась бы. Ветка работает только при YII_ENV=dev,
+    // в бою переменная не задаётся и модуль не подключается. Gii убран:
+    // генератор в этом проекте не нужен, а лишний открытый модуль - риск.
     $config['bootstrap'][] = 'debug';
     $config['modules']['debug'] = [
         'class' => \yii\debug\Module::class,
-    ];
-
-    $config['bootstrap'][] = 'gii';
-    $config['modules']['gii'] = [
-        'class' => \yii\gii\Module::class,
+        'allowedIPs' => ['*'],
     ];
 }
 

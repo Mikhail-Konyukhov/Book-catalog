@@ -125,10 +125,12 @@ class Book extends ActiveRecord
 
     public function setAuthorIds(mixed $value): void
     {
-        $this->_authorIds = array_values(array_filter(
+        // array_unique обязателен: подделанный POST с одним и тем же id дважды
+        // доходит до link() дважды и роняет вставку дублем составного PK.
+        $this->_authorIds = array_values(array_unique(array_filter(
             is_array($value) ? $value : [$value],
             static fn ($id): bool => $id !== '' && $id !== null
-        ));
+        )));
     }
 
     public function getCoverUrl(): ?string
@@ -167,17 +169,34 @@ class Book extends ActiveRecord
         parent::afterSave($insert, $changedAttributes);
 
         if ($this->_authorIds !== null) {
-            // unlinkAll(false) для viaTable не удаляет строки, а пишет NULL в составной PK.
-            $this->unlinkAll('authors', true);
-
-            foreach ($this->_authorIds as $id) {
-                $this->link('authors', Author::findOne((int) $id));
-            }
+            $this->syncAuthors();
         }
 
         self::deleteCover($this->_replacedCoverPath);
         $this->_replacedCoverPath = null;
-        $this->_uploadedCoverPath = null;
+    }
+
+    /**
+     * Состав авторов переписывается двумя запросами: удаление прежних строк
+     * и один batchInsert. link() в цикле дал бы запрос на автора плюс выборку
+     * самой модели, а на несуществующем id (save без валидации) — TypeError.
+     */
+    private function syncAuthors(): void
+    {
+        $db = static::getDb();
+        // Через viaTable удаляются именно строки связи: NULL в составной PK не лезет.
+        $db->createCommand()->delete('{{%book_author}}', ['book_id' => $this->id])->execute();
+
+        if ($this->_authorIds !== []) {
+            $db->createCommand()->batchInsert(
+                '{{%book_author}}',
+                ['book_id', 'author_id'],
+                array_map(fn ($id): array => [$this->id, (int) $id], $this->_authorIds)
+            )->execute();
+        }
+
+        // Связь прочитана до правки — сбрасываем кеш, иначе она врёт до конца запроса.
+        unset($this->authors);
     }
 
     /**
@@ -197,8 +216,11 @@ class Book extends ActiveRecord
 
         if (!$saved) {
             self::deleteCover($this->_uploadedCoverPath);
-            $this->_uploadedCoverPath = null;
         }
+
+        // Обнуляется здесь, а не в afterSave: тот выполняется внутри транзакции,
+        // и упавший COMMIT оставил бы файл сиротой уже без пути к нему.
+        $this->_uploadedCoverPath = null;
 
         return $saved;
     }
